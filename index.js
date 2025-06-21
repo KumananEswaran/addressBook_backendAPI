@@ -23,7 +23,7 @@ app.post('/add-contact', async (req, res) => {
 
 	try {
 		await pool.query(
-			`INSERT INTO contacts (name, phone, email, address, avatar) VALUES ($1, $2, $3, $4, $5)`,
+			`INSERT INTO contacts (name, phone, email, address, avatar) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
 			[name, phone, email, address, avatar]
 		);
 		res.status(201).json({ message: `Contact added successfully` });
@@ -44,19 +44,30 @@ app.get('/contacts', async (req, res) => {
 	}
 });
 
-// To edit a recipe
+// To edit a contact
 app.put('/contacts/:id', async (req, res) => {
 	const { name, phone, email, address, avatar } = req.body;
 
 	try {
 		await pool.query(
-			'UPDATE contacts SET name=$1, phone=$2, email=$3, address=$4, avatar=$5 WHERE id=$6',
+			'UPDATE contacts SET name=$1, phone=$2, email=$3, address=$4, avatar=$5 WHERE id=$6 RETURNING *',
 			[name, phone, email, address, avatar, req.params.id]
 		);
-		res.sendStatus(200);
+		res.status(200).json({ message: 'Contact updated successfully' });
+	} catch (error) {
+		console.error(`Error updating contact ID ${req.params.id}:`, error);
+		res.status(500).send({ error: error.message });
+	}
+});
+
+// To delete a contact
+app.delete('/contacts/:id', async (req, res) => {
+	try {
+		await pool.query('DELETE FROM contacts WHERE id=$1', [req.params.id]);
+		res.status(200).json({ message: 'Contact deleted successfully' });
 	} catch (error) {
 		console.error(error);
-		res.sendStatus(500);
+		res.status(500).send({ error: error.message });
 	}
 });
 
