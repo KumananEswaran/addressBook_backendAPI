@@ -33,6 +33,7 @@ app.post('/add-contact', async (req, res) => {
 	}
 });
 
+// To display contacts in contact page
 app.get('/contacts', async (req, res) => {
 	try {
 		const result = await pool.query(`SELECT * FROM contacts ORDER BY id DESC`);
@@ -40,6 +41,22 @@ app.get('/contacts', async (req, res) => {
 	} catch (error) {
 		console.error('Error fetching contact:', error);
 		res.status(500).send({ error: error.message });
+	}
+});
+
+// To edit a recipe
+app.put('/contacts/:id', async (req, res) => {
+	const { name, phone, email, address, avatar } = req.body;
+
+	try {
+		await pool.query(
+			'UPDATE contacts SET name=$1, phone=$2, email=$3, address=$4, avatar=$5 WHERE id=$6',
+			[name, phone, email, address, avatar, req.params.id]
+		);
+		res.sendStatus(200);
+	} catch (error) {
+		console.error(error);
+		res.sendStatus(500);
 	}
 });
 
